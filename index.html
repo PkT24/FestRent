@@ -1,0 +1,755 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FestRent — Event Procurement Marketplace</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,700;1,300&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0a;
+    --surface: #111111;
+    --border: #222222;
+    --accent: #ff6b2b;
+    --accent2: #ffd166;
+    --accent3: #06d6a0;
+    --accent4: #118ab2;
+    --accent5: #9b5de5;
+    --text: #f0f0f0;
+    --muted: #666;
+    --card: #141414;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Noise overlay */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0.4;
+  }
+
+  .container {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 60px 32px;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* Header */
+  .header {
+    margin-bottom: 72px;
+    animation: fadeUp 0.8s ease both;
+  }
+
+  .eyebrow {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    color: var(--accent);
+    text-transform: uppercase;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .eyebrow::before {
+    content: '';
+    width: 24px;
+    height: 1px;
+    background: var(--accent);
+    display: inline-block;
+  }
+
+  h1 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(52px, 8vw, 96px);
+    line-height: 0.9;
+    letter-spacing: 0.02em;
+    color: var(--text);
+    margin-bottom: 20px;
+  }
+
+  h1 span {
+    color: var(--accent);
+  }
+
+  .subtitle {
+    font-size: 16px;
+    color: var(--muted);
+    font-weight: 300;
+    max-width: 480px;
+    line-height: 1.6;
+  }
+
+  /* Stats strip */
+  .stats {
+    display: flex;
+    gap: 0;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+    margin-bottom: 72px;
+    animation: fadeUp 0.8s 0.1s ease both;
+  }
+
+  .stat {
+    flex: 1;
+    padding: 24px 28px;
+    border-right: 1px solid var(--border);
+  }
+
+  .stat:last-child { border-right: none; }
+
+  .stat-value {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 36px;
+    color: var(--accent);
+    line-height: 1;
+    margin-bottom: 4px;
+  }
+
+  .stat-label {
+    font-size: 12px;
+    color: var(--muted);
+    font-family: 'JetBrains Mono', monospace;
+    letter-spacing: 0.05em;
+  }
+
+  /* Section label */
+  .section-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.25em;
+    color: var(--muted);
+    text-transform: uppercase;
+    margin-bottom: 28px;
+  }
+
+  /* Pipeline */
+  .pipeline {
+    position: relative;
+    margin-bottom: 72px;
+  }
+
+  .pipeline-track {
+    position: absolute;
+    left: 28px;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: linear-gradient(to bottom, var(--accent), var(--accent2), var(--accent3), var(--accent4), var(--accent5));
+    opacity: 0.3;
+  }
+
+  .phase {
+    display: grid;
+    grid-template-columns: 56px 1fr;
+    gap: 24px;
+    margin-bottom: 8px;
+    animation: fadeUp 0.7s ease both;
+  }
+
+  .phase:nth-child(2) { animation-delay: 0.1s; }
+  .phase:nth-child(3) { animation-delay: 0.2s; }
+  .phase:nth-child(4) { animation-delay: 0.3s; }
+  .phase:nth-child(5) { animation-delay: 0.4s; }
+  .phase:nth-child(6) { animation-delay: 0.5s; }
+
+  .phase-dot {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 20px;
+    flex-shrink: 0;
+    position: relative;
+    z-index: 1;
+    border: 2px solid;
+    background: var(--bg);
+  }
+
+  .phase-body {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 28px 32px;
+    margin-bottom: 16px;
+    transition: border-color 0.2s, transform 0.2s;
+    cursor: default;
+  }
+
+  .phase-body:hover {
+    transform: translateX(4px);
+  }
+
+  .phase-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  .phase-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 28px;
+    letter-spacing: 0.04em;
+    line-height: 1;
+  }
+
+  .phase-timeline {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    padding: 4px 12px;
+    border-radius: 100px;
+    letter-spacing: 0.05em;
+    white-space: nowrap;
+    border: 1px solid;
+  }
+
+  .phase-desc {
+    font-size: 14px;
+    color: #aaa;
+    line-height: 1.65;
+    margin-bottom: 20px;
+    font-weight: 300;
+  }
+
+  .tasks {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .task {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    font-size: 13px;
+    color: #ccc;
+    line-height: 1.5;
+  }
+
+  .task-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    margin-top: 6px;
+  }
+
+  /* Phase colors */
+  .p1 .phase-dot { color: var(--accent); border-color: var(--accent); }
+  .p1 .phase-title { color: var(--accent); }
+  .p1 .phase-timeline { color: var(--accent); border-color: rgba(255,107,43,0.3); background: rgba(255,107,43,0.08); }
+  .p1 .phase-body:hover { border-color: rgba(255,107,43,0.4); }
+  .p1 .task-dot { background: var(--accent); }
+
+  .p2 .phase-dot { color: var(--accent2); border-color: var(--accent2); }
+  .p2 .phase-title { color: var(--accent2); }
+  .p2 .phase-timeline { color: var(--accent2); border-color: rgba(255,209,102,0.3); background: rgba(255,209,102,0.08); }
+  .p2 .phase-body:hover { border-color: rgba(255,209,102,0.4); }
+  .p2 .task-dot { background: var(--accent2); }
+
+  .p3 .phase-dot { color: var(--accent3); border-color: var(--accent3); }
+  .p3 .phase-title { color: var(--accent3); }
+  .p3 .phase-timeline { color: var(--accent3); border-color: rgba(6,214,160,0.3); background: rgba(6,214,160,0.08); }
+  .p3 .phase-body:hover { border-color: rgba(6,214,160,0.4); }
+  .p3 .task-dot { background: var(--accent3); }
+
+  .p4 .phase-dot { color: var(--accent4); border-color: var(--accent4); }
+  .p4 .phase-title { color: var(--accent4); }
+  .p4 .phase-timeline { color: var(--accent4); border-color: rgba(17,138,178,0.3); background: rgba(17,138,178,0.08); }
+  .p4 .phase-body:hover { border-color: rgba(17,138,178,0.4); }
+  .p4 .task-dot { background: var(--accent4); }
+
+  .p5 .phase-dot { color: var(--accent5); border-color: var(--accent5); }
+  .p5 .phase-title { color: var(--accent5); }
+  .p5 .phase-timeline { color: var(--accent5); border-color: rgba(155,93,229,0.3); background: rgba(155,93,229,0.08); }
+  .p5 .phase-body:hover { border-color: rgba(155,93,229,0.4); }
+  .p5 .task-dot { background: var(--accent5); }
+
+  /* User flow */
+  .flow-section {
+    margin-bottom: 72px;
+    animation: fadeUp 0.8s 0.3s ease both;
+  }
+
+  .flow-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+  }
+
+  .flow-col {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 28px 24px;
+  }
+
+  .flow-col-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+
+  .flow-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    flex-shrink: 0;
+  }
+
+  .flow-col-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 20px;
+    letter-spacing: 0.04em;
+  }
+
+  .flow-steps {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+
+  .flow-step {
+    display: flex;
+    gap: 12px;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .flow-step:last-child { border-bottom: none; }
+
+  .flow-num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--muted);
+    padding-top: 2px;
+    flex-shrink: 0;
+    width: 18px;
+  }
+
+  .flow-text {
+    font-size: 13px;
+    color: #bbb;
+    line-height: 1.5;
+    font-weight: 300;
+  }
+
+  /* Revenue model */
+  .revenue-section {
+    margin-bottom: 72px;
+    animation: fadeUp 0.8s 0.4s ease both;
+  }
+
+  .revenue-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+  }
+
+  .revenue-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 28px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .revenue-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+  }
+
+  .rev-primary::before { background: var(--accent); }
+  .rev-secondary::before { background: var(--accent2); }
+  .rev-tertiary::before { background: var(--accent3); }
+  .rev-future::before { background: var(--accent5); }
+
+  .revenue-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--muted);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+
+  .revenue-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 24px;
+    margin-bottom: 8px;
+    letter-spacing: 0.04em;
+  }
+
+  .revenue-desc {
+    font-size: 13px;
+    color: #999;
+    line-height: 1.6;
+    font-weight: 300;
+  }
+
+  .revenue-pct {
+    position: absolute;
+    top: 28px;
+    right: 28px;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 40px;
+    opacity: 0.15;
+  }
+
+  /* Risk section */
+  .risk-section {
+    animation: fadeUp 0.8s 0.5s ease both;
+    margin-bottom: 40px;
+  }
+
+  .risk-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+  }
+
+  .risk-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 24px;
+  }
+
+  .risk-emoji {
+    font-size: 28px;
+    margin-bottom: 12px;
+  }
+
+  .risk-title {
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 700;
+    font-size: 14px;
+    margin-bottom: 8px;
+    color: var(--text);
+  }
+
+  .risk-text {
+    font-size: 12px;
+    color: var(--muted);
+    line-height: 1.6;
+  }
+
+  .risk-fix {
+    margin-top: 10px;
+    font-size: 12px;
+    color: var(--accent3);
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  /* Footer */
+  .footer {
+    border-top: 1px solid var(--border);
+    padding-top: 32px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  .footer-brand {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 22px;
+    letter-spacing: 0.1em;
+    color: var(--accent);
+  }
+
+  .footer-note {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: 0.05em;
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(24px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @media (max-width: 700px) {
+    .flow-grid, .risk-grid { grid-template-columns: 1fr; }
+    .revenue-grid { grid-template-columns: 1fr; }
+    .stats { flex-direction: column; }
+    .stat { border-right: none; border-bottom: 1px solid var(--border); }
+    .stat:last-child { border-bottom: none; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <!-- Header -->
+  <div class="header">
+    <div class="eyebrow">Product Roadmap · 2025</div>
+    <h1>FEST<span>RENT</span></h1>
+    <p class="subtitle">An event equipment procurement marketplace — organizers post what they need, verified suppliers bid, FestRent manages the contract and logistics end-to-end.</p>
+  </div>
+
+  <!-- Stats -->
+  <div class="stats">
+    <div class="stat">
+      <div class="stat-value">$35B</div>
+      <div class="stat-label">Event equipment rental market</div>
+    </div>
+    <div class="stat">
+      <div class="stat-value">~3wks</div>
+      <div class="stat-label">Avg. organizer sourcing time</div>
+    </div>
+    <div class="stat">
+      <div class="stat-value">10–15%</div>
+      <div class="stat-label">Platform cut per contract</div>
+    </div>
+    <div class="stat">
+      <div class="stat-value">0</div>
+      <div class="stat-label">Dedicated procurement platforms for events</div>
+    </div>
+  </div>
+
+  <!-- Pipeline -->
+  <div class="pipeline">
+    <div class="section-label">— Launch Pipeline</div>
+    <div class="pipeline-track"></div>
+
+    <div class="phase p1">
+      <div class="phase-dot">01</div>
+      <div class="phase-body">
+        <div class="phase-header">
+          <div class="phase-title">Build the Platform Core</div>
+          <div class="phase-timeline">Month 1–2</div>
+        </div>
+        <p class="phase-desc">No users yet. Build the procurement infrastructure that makes FestRent different from emailing suppliers manually — the bid request system, supplier verification, and contract layer.</p>
+        <div class="tasks">
+          <div class="task"><div class="task-dot"></div><span>Build organizer-side: event posting, equipment needs specification, bid review dashboard</span></div>
+          <div class="task"><div class="task-dot"></div><span>Build supplier-side: profile creation, verified credentials, bid submission with pricing and availability</span></div>
+          <div class="task"><div class="task-dot"></div><span>Design supplier verification pipeline — business registration, insurance proof, equipment portfolio</span></div>
+          <div class="task"><div class="task-dot"></div><span>Build contract generation — auto-drafted agreements based on accepted bid terms, signed in-platform</span></div>
+          <div class="task"><div class="task-dot"></div><span>Integrate escrow payments — organizer pays on contract acceptance, supplier paid on delivery confirmation</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="phase p2">
+      <div class="phase-dot">02</div>
+      <div class="phase-body">
+        <div class="phase-header">
+          <div class="phase-title">Land 3 Organizer Discovery Calls</div>
+          <div class="phase-timeline">Month 1 (parallel)</div>
+        </div>
+        <p class="phase-desc">Before writing more code, validate that procurement pain is real. Find 3 GTA event organizers and ask them how they currently source equipment. Their answers will reshape everything.</p>
+        <div class="tasks">
+          <div class="task"><div class="task-dot"></div><span>Target: community festival committees, college event boards, cultural fair organizers — approachable decision-makers</span></div>
+          <div class="task"><div class="task-dot"></div><span>Cold outreach on LinkedIn — short, direct ask for 20 minutes, no pitch yet</span></div>
+          <div class="task"><div class="task-dot"></div><span>Ask: "How do you currently source equipment?" / "What's the worst part of that process?" / "Have you ever had a supplier fall through?"</span></div>
+          <div class="task"><div class="task-dot"></div><span>Listen for: time spent sourcing, fallthrough rates, price surprises, contract disputes — these are your product requirements</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="phase p3">
+      <div class="phase-dot">03</div>
+      <div class="phase-body">
+        <div class="phase-header">
+          <div class="phase-title">Onboard Verified Suppliers</div>
+          <div class="phase-timeline">Month 2–3</div>
+        </div>
+        <p class="phase-desc">Use a confirmed organizer interest as your recruitment pitch to suppliers. You're not asking them to join a platform — you're telling them there's a specific event contract available to bid on.</p>
+        <div class="tasks">
+          <div class="task"><div class="task-dot"></div><span>Target small-to-mid equipment rental firms, AV companies, tent & furniture suppliers across GTA</span></div>
+          <div class="task"><div class="task-dot"></div><span>Also recruit serious individual owners — someone with a cargo van, 50 chairs, and a weekend free is a real supplier</span></div>
+          <div class="task"><div class="task-dot"></div><span>Run each supplier through full verification before approval — insurance, references, equipment photos</span></div>
+          <div class="task"><div class="task-dot"></div><span>Target 15–25 verified suppliers across core categories before first organizer goes live</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="phase p4">
+      <div class="phase-dot">04</div>
+      <div class="phase-body">
+        <div class="phase-header">
+          <div class="phase-title">Run the First Live Procurement</div>
+          <div class="phase-timeline">Month 3–4</div>
+        </div>
+        <p class="phase-desc">Get one real organizer to post a real equipment need and let verified suppliers bid on it. Manage this one manually if needed — your job is to learn what breaks before automating it.</p>
+        <div class="tasks">
+          <div class="task"><div class="task-dot"></div><span>Work with the organizer to spec their needs clearly — quantities, dates, delivery requirements, budget range</span></div>
+          <div class="task"><div class="task-dot"></div><span>Notify matched suppliers and guide them through the bid process hands-on</span></div>
+          <div class="task"><div class="task-dot"></div><span>Facilitate contract signing and escrow payment — handle edge cases manually, document everything</span></div>
+          <div class="task"><div class="task-dot"></div><span>Be on the ground day-of — confirm delivery, handle disputes, collect testimonials from both sides</span></div>
+          <div class="task"><div class="task-dot"></div><span>Track: bid response rate, time-to-contract, organizer satisfaction, supplier friction points</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="phase p5">
+      <div class="phase-dot">05</div>
+      <div class="phase-body">
+        <div class="phase-header">
+          <div class="phase-title">Scale the Marketplace</div>
+          <div class="phase-timeline">Month 5+</div>
+        </div>
+        <p class="phase-desc">Use the first contract as proof. Expand organizer base, deepen supplier network, and automate the coordination layer. Start exploring multi-category procurement and repeat organizer deals.</p>
+        <div class="tasks">
+          <div class="task"><div class="task-dot"></div><span>Build repeatable onboarding playbook for organizers — templated need specs by event type</span></div>
+          <div class="task"><div class="task-dot"></div><span>Approach larger events armed with transaction proof — completed contracts, on-time delivery rate, testimonials</span></div>
+          <div class="task"><div class="task-dot"></div><span>Introduce preferred supplier tier — higher-rated suppliers get early bid access and lower commission</span></div>
+          <div class="task"><div class="task-dot"></div><span>Expand into multi-vendor procurement — one organizer, multiple simultaneous bid categories</span></div>
+          <div class="task"><div class="task-dot"></div><span>Explore annual retainer model for repeat organizers running multiple events per year</span></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- User Flow -->
+  <div class="flow-section">
+    <div class="section-label">— How It Works (3 Perspectives)</div>
+    <div class="flow-grid">
+
+      <div class="flow-col">
+        <div class="flow-col-header">
+          <div class="flow-icon" style="background:rgba(255,107,43,0.12)">🎪</div>
+          <div class="flow-col-title" style="color:var(--accent)">Event Organizer</div>
+        </div>
+        <div class="flow-steps">
+          <div class="flow-step"><div class="flow-num">01</div><div class="flow-text">Post event: type, size, date, location, and equipment needs</div></div>
+          <div class="flow-step"><div class="flow-num">02</div><div class="flow-text">Specify requirements per category — quantities, delivery window, budget range</div></div>
+          <div class="flow-step"><div class="flow-num">03</div><div class="flow-text">Review incoming bids from verified suppliers — price, rating, portfolio</div></div>
+          <div class="flow-step"><div class="flow-num">04</div><div class="flow-text">Accept bid — contract auto-generated and signed in-platform</div></div>
+          <div class="flow-step"><div class="flow-num">05</div><div class="flow-text">Payment held in escrow, released on confirmed delivery</div></div>
+        </div>
+      </div>
+
+      <div class="flow-col">
+        <div class="flow-col-header">
+          <div class="flow-icon" style="background:rgba(255,209,102,0.12)">✅</div>
+          <div class="flow-col-title" style="color:var(--accent2)">Verified Supplier</div>
+        </div>
+        <div class="flow-steps">
+          <div class="flow-step"><div class="flow-num">01</div><div class="flow-text">Apply — submit business info, insurance proof, equipment portfolio</div></div>
+          <div class="flow-step"><div class="flow-num">02</div><div class="flow-text">Browse open procurement requests matched to your inventory</div></div>
+          <div class="flow-step"><div class="flow-num">03</div><div class="flow-text">Submit bid — price, availability, delivery terms, any notes</div></div>
+          <div class="flow-step"><div class="flow-num">04</div><div class="flow-text">If accepted, sign contract and coordinate delivery logistics</div></div>
+          <div class="flow-step"><div class="flow-num">05</div><div class="flow-text">Deliver, confirm in-app, get paid — build rating score for future bids</div></div>
+        </div>
+      </div>
+
+      <div class="flow-col">
+        <div class="flow-col-header">
+          <div class="flow-icon" style="background:rgba(6,214,160,0.12)">⚙️</div>
+          <div class="flow-col-title" style="color:var(--accent3)">FestRent Platform</div>
+        </div>
+        <div class="flow-steps">
+          <div class="flow-step"><div class="flow-num">01</div><div class="flow-text">Verifies all suppliers before they can bid on any contract</div></div>
+          <div class="flow-step"><div class="flow-num">02</div><div class="flow-text">Matches procurement posts to relevant suppliers automatically</div></div>
+          <div class="flow-step"><div class="flow-num">03</div><div class="flow-text">Auto-generates legally binding contracts from accepted bid terms</div></div>
+          <div class="flow-step"><div class="flow-num">04</div><div class="flow-text">Holds payment in escrow and manages dispute resolution</div></div>
+          <div class="flow-step"><div class="flow-num">05</div><div class="flow-text">Takes 10–15% cut on completed contracts — no placement, no fee</div></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Revenue -->
+  <div class="revenue-section">
+    <div class="section-label">— Revenue Model</div>
+    <div class="revenue-grid">
+      <div class="revenue-card rev-primary">
+        <div class="revenue-pct">10%</div>
+        <div class="revenue-label">Core Revenue</div>
+        <div class="revenue-title">Transaction Commission</div>
+        <div class="revenue-desc">10–15% cut on every contract completed through the platform. Automatically deducted from supplier payout after delivery confirmation. Scales directly with event volume.</div>
+      </div>
+      <div class="revenue-card rev-secondary">
+        <div class="revenue-pct">$</div>
+        <div class="revenue-label">Organizer Tier</div>
+        <div class="revenue-title">Annual Retainer</div>
+        <div class="revenue-desc">Repeat organizers running 3+ events per year pay a flat annual fee for priority matching, dedicated account support, and locked-in supplier availability windows.</div>
+      </div>
+      <div class="revenue-card rev-tertiary">
+        <div class="revenue-pct">★</div>
+        <div class="revenue-label">Supplier Tier</div>
+        <div class="revenue-title">Preferred Supplier</div>
+        <div class="revenue-desc">High-volume suppliers pay a monthly fee for early bid access, lower commission rate, and demand forecasting — seeing which events are likely to post needs before they go live.</div>
+      </div>
+      <div class="revenue-card rev-future">
+        <div class="revenue-pct">+</div>
+        <div class="revenue-label">Future Revenue</div>
+        <div class="revenue-title">Contract Add-Ons</div>
+        <div class="revenue-desc">Optional add-ons: damage insurance underwriting, logistics coordination services, and white-label procurement portals for large recurring event operators.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Risks -->
+  <div class="risk-section">
+    <div class="section-label">— Key Risks & Mitigations</div>
+    <div class="risk-grid">
+      <div class="risk-card">
+        <div class="risk-emoji">🐔</div>
+        <div class="risk-title">Chicken & Egg Problem</div>
+        <div class="risk-text">Organizers won't post needs without suppliers. Suppliers won't onboard without active procurement requests.</div>
+        <div class="risk-fix">→ Manually seed supply first. Recruit 15–25 verified suppliers before the first organizer goes live — so day-one bids come in fast.</div>
+      </div>
+      <div class="risk-card">
+        <div class="risk-emoji">📋</div>
+        <div class="risk-title">Supplier Fallthrough</div>
+        <div class="risk-text">Accepted supplier doesn't deliver. Organizer has 500 people showing up and no chairs. Platform credibility destroyed instantly.</div>
+        <div class="risk-fix">→ Escrow held until delivery confirmed. Penalty clauses in auto-generated contracts. Backup supplier list maintained for pilot events.</div>
+      </div>
+      <div class="risk-card">
+        <div class="risk-emoji">✂️</div>
+        <div class="risk-title">Disintermediation</div>
+        <div class="risk-text">Organizer takes a supplier's number after the first contract and cuts FestRent out of future deals.</div>
+        <div class="risk-fix">→ Own the contract layer, payment history, and ratings. The platform value compounds — switching means losing verified history and escrow protection.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <div class="footer">
+    <div class="footer-brand">FESTRENT</div>
+    <div class="footer-note">Confidential · Internal Roadmap · 2025</div>
+  </div>
+
+</div>
+</body>
+</html>
